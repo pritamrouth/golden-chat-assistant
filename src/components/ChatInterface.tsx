@@ -57,11 +57,23 @@ export const ChatInterface: React.FC = () => {
     adjustTextareaHeight();
   }, [inputValue]);
 
+  // Early return with loading state if currentConversation is null
+  if (!currentConversation) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center">
+        <div className="p-4 text-center">
+          <h2 className="text-xl font-semibold mb-2">Loading conversation...</h2>
+          <p className="text-muted-foreground">Please wait while we set up your chat</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Chat messages area */}
       <div className="flex-grow overflow-y-auto px-4 md:px-8 py-6">
-        {currentConversation?.messages.length === 0 ? (
+        {currentConversation.messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 gold-text">Shopping Assistant</h1>
             <p className="text-center text-muted-foreground max-w-md mb-8">

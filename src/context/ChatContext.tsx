@@ -34,6 +34,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize with a default conversation
   useEffect(() => {
+    // Create initial conversation if none exists
     if (conversations.length === 0) {
       const initialConversation: Conversation = {
         id: generateId(),
@@ -45,7 +46,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setConversations([initialConversation]);
       setCurrentConversation(initialConversation);
     }
-  }, [conversations.length]);
+  }, []);
 
   const generateId = () => {
     return Math.random().toString(36).substring(2, 11);
