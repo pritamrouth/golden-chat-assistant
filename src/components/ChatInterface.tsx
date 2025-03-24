@@ -5,6 +5,7 @@ import { MessageItem } from './MessageItem';
 import { TypingIndicator } from './TypingIndicator';
 import { ImageUpload } from './ImageUpload';
 import { Send, ImagePlus, X } from 'lucide-react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export const ChatInterface: React.FC = () => {
   const { currentConversation, sendMessage, isTyping } = useChat();
@@ -13,6 +14,7 @@ export const ChatInterface: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isMobile = useIsMobile();
 
   // Scroll to bottom when messages change or typing state changes
   useEffect(() => {
@@ -72,14 +74,14 @@ export const ChatInterface: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Chat messages area */}
-      <div className="flex-grow overflow-y-auto px-4 md:px-8 py-6">
+      <div className="flex-grow overflow-y-auto px-2 sm:px-4 md:px-8 py-4 sm:py-6">
         {currentConversation.messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 gold-text">Shopping Assistant</h1>
-            <p className="text-center text-muted-foreground max-w-md mb-8">
+          <div className="h-full flex flex-col items-center justify-center p-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 gold-text text-center">Shopping Assistant</h1>
+            <p className="text-center text-muted-foreground max-w-md mb-6 sm:mb-8 text-sm sm:text-base">
               Welcome to your premium shopping assistant. Ask me anything about products, pricing, or recommendations.
             </p>
-            <div className="flex flex-col gap-3 w-full max-w-md">
+            <div className="flex flex-col gap-2 sm:gap-3 w-full max-w-md">
               {[
                 "What are some trending products right now?",
                 "Can you recommend a good laptop for video editing?",
@@ -94,7 +96,7 @@ export const ChatInterface: React.FC = () => {
                       inputRef.current.focus();
                     }
                   }}
-                  className="p-4 rounded-xl text-left border border-border hover:border-gold/50 hover:bg-secondary/30 transition-all"
+                  className="p-3 sm:p-4 rounded-xl text-left border border-border hover:border-gold/50 hover:bg-secondary/30 transition-all text-sm sm:text-base"
                 >
                   {suggestion}
                 </button>
@@ -117,11 +119,11 @@ export const ChatInterface: React.FC = () => {
       </div>
 
       {/* Chat input area */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-2 sm:p-3 md:p-4">
         {showImageUpload && (
-          <div className="mb-3">
+          <div className="mb-2 sm:mb-3">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-medium">Add Images</h3>
+              <h3 className="text-xs sm:text-sm font-medium">Add Images</h3>
               <button 
                 onClick={() => setShowImageUpload(false)}
                 className="text-muted-foreground hover:text-foreground"
@@ -133,13 +135,14 @@ export const ChatInterface: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        <form onSubmit={handleSubmit} className="flex items-end gap-1 sm:gap-2">
           <button
             type="button"
             onClick={() => setShowImageUpload(!showImageUpload)}
-            className="p-3 rounded-full bg-secondary/50 hover:bg-secondary/80 transition-colors gold-focus"
+            className="p-2 sm:p-3 rounded-full bg-secondary/50 hover:bg-secondary/80 transition-colors gold-focus"
+            aria-label="Add images"
           >
-            <ImagePlus className="h-5 w-5" />
+            <ImagePlus className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
           
           <div className="flex-grow relative">
@@ -150,7 +153,7 @@ export const ChatInterface: React.FC = () => {
               onKeyDown={handleKeyDown}
               placeholder="Type your message..."
               rows={1}
-              className="w-full rounded-xl px-4 py-3 resize-none overflow-hidden bg-background gold-focus
+              className="w-full rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base resize-none overflow-hidden bg-background gold-focus
                 focus:ring-offset-background border border-input"
               style={{ maxHeight: '150px' }}
             />
@@ -159,10 +162,11 @@ export const ChatInterface: React.FC = () => {
           <button
             type="submit"
             disabled={!inputValue.trim() && selectedImages.length === 0}
-            className="p-3 rounded-full gold-gradient text-white transition-all
+            className="p-2 sm:p-3 rounded-full gold-gradient text-white transition-all
               disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 gold-focus"
+            aria-label="Send message"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </form>
       </div>

@@ -15,30 +15,30 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
 
   return (
     <div 
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4 animate-fade-in`}
     >
       <div 
-        className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-4 shadow-md
+        className={`max-w-[90%] sm:max-w-[85%] lg:max-w-[70%] rounded-2xl p-3 sm:p-4 shadow-md
           ${isUser 
             ? 'bg-gold text-white rounded-tr-none' 
             : 'glass-card rounded-tl-none'}`}
       >
         {message.images && message.images.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
             {message.images.map((image, index) => (
               <img 
                 key={index}
                 src={image}
                 alt="Uploaded"
-                className="max-h-40 rounded-lg object-contain"
+                className="max-h-32 sm:max-h-40 rounded-lg object-contain"
               />
             ))}
           </div>
         )}
         
-        <div className="whitespace-pre-wrap">{message.content}</div>
+        <div className="whitespace-pre-wrap text-sm sm:text-base">{message.content}</div>
         
-        <div className={`text-xs mt-2 text-right ${isUser ? 'text-white/70' : 'text-muted-foreground'}`}>
+        <div className={`text-xs mt-1 sm:mt-2 text-right ${isUser ? 'text-white/70' : 'text-muted-foreground'}`}>
           {time}
         </div>
       </div>
