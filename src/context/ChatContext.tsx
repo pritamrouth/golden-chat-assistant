@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface Message {
   id: string;
@@ -31,9 +32,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [genAI, setGenAI] = useState<GoogleGenerativeAI | null>(null);
 
-  // Initialize with a default conversation
   useEffect(() => {
+    // Initialize Gemini API
+    const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+    if (API_KEY) {
+      const ai = new GoogleGenerativeAI(API_KEY);
+      setGenAI(ai);
+    } else {
+      console.warn("Gemini API key not found. Using mock responses instead.");
+    }
+    
     // Create initial conversation if none exists
     if (conversations.length === 0) {
       const initialConversation: Conversation = {
@@ -71,6 +81,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const formatChatHistory = (messages: Message[]) => {
+    return messages.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }]
+    }));
+  };
+
   const sendMessage = async (content: string, images?: string[]) => {
     if (!currentConversation) return;
     
@@ -100,12 +117,62 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Show typing indicator
     setIsTyping(true);
+
+    try {
+      let responseText = '';
+      
+      if (genAI) {
+        // Use Gemini API for response
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        // Format chat history for Gemini API
+        const history = formatChatHistory(currentConversation.messages);
+        
+        // Start chat with history (excluding the latest user message)
+        const chat = model.startChat({
+          history: history.slice(0, -1)
+        });
+
+        // Create message parts (text and images if any)
+        const messageParts: any[] = [content];
+        
+        // If there are images, add them to the message parts
+        if (images && images.length > 0) {
+          const imageParts = images.map(imageUrl => {
+            // For base64 images
+            if (imageUrl.startsWith('data:image')) {
+              const base64Data = imageUrl.split(',')[1];
+              return {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: imageUrl.split(';')[0].split(':')[1]
+                }
+              };
+            }
+            // For image URLs, we'd need a different approach
+            return { text: `Image URL: ${imageUrl}` };
+          });
+          
+          messageParts.push(...imageParts);
+        }
+        
+        // Send message to Gemini and get response
+        try {
+          const result = await chat.sendMessage(messageParts);
+          responseText = result.response.text();
+        } catch (error) {
+          console.error("Error sending message to Gemini:", error);
+          responseText = "Sorry, I encountered an error processing your request. Please try again.";
+        }
+      } else {
+        // Fall back to mock response if API is not available
+        responseText = getMockResponse(content);
+      }
     
-    // Simulate assistant response (would be replaced with actual API call)
-    setTimeout(() => {
+      // Create assistant message
       const assistantMessage: Message = {
         id: generateId(),
-        content: getMockResponse(content),
+        content: responseText,
         role: 'assistant',
         timestamp: new Date()
       };
@@ -125,18 +192,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
       
-      // Update conversations
+      // Update conversations with the assistant response
       setConversations(prevConversations => 
         prevConversations.map(c => 
           c.id === currentConversation.id ? finalConversation : c
         )
       );
       setCurrentConversation(finalConversation);
+    } catch (error) {
+      console.error("Error in chat process:", error);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
-  // Mock response generator (temporary)
+  // Mock response generator (fallback when API is not available)
   const getMockResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     
